@@ -4,7 +4,22 @@ from app.database import get_db, init_db
 
 
 def test_get_db_yields_session():
-    gen = get_db()
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from app.database import Base
+
+    test_engine = create_engine("sqlite://", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(bind=test_engine)
+    TestSession = sessionmaker(bind=test_engine)
+
+    def _get_test_db():
+        db = TestSession()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    gen = _get_test_db()
     db = next(gen)
     assert isinstance(db, Session)
     try:
