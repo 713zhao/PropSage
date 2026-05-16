@@ -1,9 +1,11 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
 class TaxRequest(BaseModel):
     purchase_price: float
-    citizenship: str  # SC | PR | Foreigner | Entity
+    citizenship: Literal["SC", "PR", "Foreigner", "Entity"]
     existing_property_count: int
     renovation_budget: float = 0.0
     agent_rate: float = 0.01

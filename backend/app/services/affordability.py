@@ -42,7 +42,7 @@ def calculate_ltv(loan_count: int) -> dict:
     return {"max_ltv": max_ltv, "max_ltv_pct": max_ltv * 100, "loan_count": loan_count}
 
 
-def _monthly_payment(principal: float, annual_rate: float, tenure_years: int) -> float:
+def monthly_payment(principal: float, annual_rate: float, tenure_years: int) -> float:
     r = annual_rate / 12
     n = tenure_years * 12
     if r < 1e-10:
@@ -50,7 +50,7 @@ def _monthly_payment(principal: float, annual_rate: float, tenure_years: int) ->
     return principal * (r * (1 + r) ** n) / ((1 + r) ** n - 1)
 
 
-def _max_loan_from_payment(monthly_cap: float, annual_rate: float, tenure_years: int) -> float:
+def max_loan_from_payment(monthly_cap: float, annual_rate: float, tenure_years: int) -> float:
     r = annual_rate / 12
     n = tenure_years * 12
     if r < 1e-10:
@@ -77,7 +77,7 @@ def calculate_max_loan(
     msr_payment_cap = gross_monthly_income * _MSR_LIMIT if is_hdb else float("inf")
     debt_service_cap = min(tdsr_payment_cap, msr_payment_cap)
 
-    max_loan_from_debt = _max_loan_from_payment(debt_service_cap, stress_rate, loan_tenure_years)
+    max_loan_from_debt = max_loan_from_payment(debt_service_cap, stress_rate, loan_tenure_years)
     max_loan = max(0.0, min(ltv_cap, max_loan_from_debt))
     min_down = price - max_loan
 

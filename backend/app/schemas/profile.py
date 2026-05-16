@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AffordabilityRequest(BaseModel):
     purchase_price: float
     gross_monthly_income: float
     existing_monthly_commitments: float = 0.0
-    loan_tenure_years: int = 30
-    existing_loan_count: int = 0
+    loan_tenure_years: int = Field(default=30, gt=0)
+    existing_loan_count: int = Field(default=0, ge=0)
     is_hdb: bool = False
 
 

@@ -4,7 +4,7 @@ from app.services.affordability import (
     calculate_max_loan,
     calculate_tdsr,
     calculate_msr,
-    _monthly_payment,
+    monthly_payment,
 )
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
@@ -20,7 +20,7 @@ def check_affordability(req: AffordabilityRequest) -> AffordabilityResponse:
         existing_monthly_commitments=req.existing_monthly_commitments,
         is_hdb=req.is_hdb,
     )
-    est_payment = _monthly_payment(loan["max_loan"], 0.04, req.loan_tenure_years)
+    est_payment = monthly_payment(loan["max_loan"], 0.04, req.loan_tenure_years)
     tdsr = calculate_tdsr(req.gross_monthly_income, est_payment, req.existing_monthly_commitments)
     msr = calculate_msr(req.gross_monthly_income, est_payment) if req.is_hdb else None
 
