@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+backend/.env
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.env
+
+# DB
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+
+# Superpowers
+.superpowers/
