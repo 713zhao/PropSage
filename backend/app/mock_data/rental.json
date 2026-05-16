@@ -1,0 +1,19 @@
+{
+  "records": [
+    {"quarter": "2022-Q1", "property_type": "Non-landed", "region": "CCR", "index": 142.3},
+    {"quarter": "2022-Q1", "property_type": "Non-landed", "region": "RCR", "index": 138.7},
+    {"quarter": "2022-Q1", "property_type": "Non-landed", "region": "OCR", "index": 134.2},
+    {"quarter": "2022-Q2", "property_type": "Non-landed", "region": "CCR", "index": 151.8},
+    {"quarter": "2022-Q2", "property_type": "Non-landed", "region": "RCR", "index": 147.3},
+    {"quarter": "2022-Q2", "property_type": "Non-landed", "region": "OCR", "index": 141.9},
+    {"quarter": "2023-Q1", "property_type": "Non-landed", "region": "CCR", "index": 175.4},
+    {"quarter": "2023-Q1", "property_type": "Non-landed", "region": "RCR", "index": 169.2},
+    {"quarter": "2023-Q1", "property_type": "Non-landed", "region": "OCR", "index": 162.8},
+    {"quarter": "2024-Q1", "property_type": "Non-landed", "region": "CCR", "index": 185.1},
+    {"quarter": "2024-Q1", "property_type": "Non-landed", "region": "RCR", "index": 178.6},
+    {"quarter": "2024-Q1", "property_type": "Non-landed", "region": "OCR", "index": 171.3},
+    {"quarter": "2024-Q4", "property_type": "Non-landed", "region": "CCR", "index": 191.2},
+    {"quarter": "2024-Q4", "property_type": "Non-landed", "region": "RCR", "index": 184.9},
+    {"quarter": "2024-Q4", "property_type": "Non-landed", "region": "OCR", "index": 177.4}
+  ]
+}

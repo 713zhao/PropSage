@@ -1,0 +1,16 @@
+{
+  "records": [
+    {"month": "2024-01", "new_sale": 312, "sub_sale": 42, "resale": 1104},
+    {"month": "2024-02", "new_sale": 498, "sub_sale": 38, "resale": 987},
+    {"month": "2024-03", "new_sale": 621, "sub_sale": 55, "resale": 1243},
+    {"month": "2024-04", "new_sale": 744, "sub_sale": 61, "resale": 1356},
+    {"month": "2024-05", "new_sale": 892, "sub_sale": 47, "resale": 1489},
+    {"month": "2024-06", "new_sale": 1024, "sub_sale": 53, "resale": 1621},
+    {"month": "2024-07", "new_sale": 836, "sub_sale": 44, "resale": 1534},
+    {"month": "2024-08", "new_sale": 763, "sub_sale": 39, "resale": 1402},
+    {"month": "2024-09", "new_sale": 941, "sub_sale": 58, "resale": 1687},
+    {"month": "2024-10", "new_sale": 1187, "sub_sale": 62, "resale": 1823},
+    {"month": "2024-11", "new_sale": 1043, "sub_sale": 51, "resale": 1745},
+    {"month": "2024-12", "new_sale": 876, "sub_sale": 46, "resale": 1589}
+  ]
+}

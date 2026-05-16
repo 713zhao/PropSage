@@ -1,0 +1,16 @@
+{
+  "records": [
+    {"quarter": "2022-Q1", "index": 181.5, "change_pct": 0.4},
+    {"quarter": "2022-Q2", "index": 186.4, "change_pct": 2.7},
+    {"quarter": "2022-Q3", "index": 192.7, "change_pct": 3.4},
+    {"quarter": "2022-Q4", "index": 196.3, "change_pct": 1.9},
+    {"quarter": "2023-Q1", "index": 199.1, "change_pct": 1.4},
+    {"quarter": "2023-Q2", "index": 202.6, "change_pct": 1.8},
+    {"quarter": "2023-Q3", "index": 205.4, "change_pct": 1.4},
+    {"quarter": "2023-Q4", "index": 207.9, "change_pct": 1.2},
+    {"quarter": "2024-Q1", "index": 209.5, "change_pct": 0.8},
+    {"quarter": "2024-Q2", "index": 212.1, "change_pct": 1.2},
+    {"quarter": "2024-Q3", "index": 215.0, "change_pct": 1.4},
+    {"quarter": "2024-Q4", "index": 218.3, "change_pct": 1.5}
+  ]
+}
