@@ -30,6 +30,11 @@ class TestCalculateTdsr:
         result = calculate_tdsr(10_000, 0)
         assert result["monthly_debt_cap"] == 5_500.0
 
+    def test_zero_income_ratio_is_one(self):
+        result = calculate_tdsr(0, 3_000)
+        assert result["passes"] is False
+        assert result["tdsr_ratio"] == 1.0
+
 
 class TestCalculateMsr:
     def test_passes_under_30pct(self):
@@ -45,6 +50,11 @@ class TestCalculateMsr:
     def test_payment_cap_is_30pct_of_income(self):
         result = calculate_msr(10_000, 0)
         assert result["monthly_payment_cap"] == 3_000.0
+
+    def test_zero_income_ratio_is_one(self):
+        result = calculate_msr(0, 3_000)
+        assert result["passes"] is False
+        assert result["msr_ratio"] == 1.0
 
 
 class TestCalculateLtv:
@@ -69,7 +79,7 @@ class TestCalculateMaxLoan:
             loan_count=0,
             loan_tenure_years=30,
         )
-        assert result["max_loan"] <= 750_000
+        assert result["max_loan"] == 750_000.0
         assert result["is_feasible"] is True
 
     def test_min_cash_always_5pct_of_price(self):
@@ -99,4 +109,26 @@ class TestCalculateMaxLoan:
             price=800_000, gross_monthly_income=8_000, loan_count=0,
             loan_tenure_years=30, is_hdb=True,
         )
-        assert hdb_result["max_loan"] <= condo_result["max_loan"]
+        assert hdb_result["max_loan"] < condo_result["max_loan"]
+
+    def test_existing_commitments_over_tdsr_limit_gives_zero_loan(self):
+        # $10K income, TDSR cap = $5,500, existing commitments = $6,000 → already over TDSR
+        result = calculate_max_loan(
+            price=1_000_000,
+            gross_monthly_income=10_000,
+            loan_count=0,
+            loan_tenure_years=30,
+            existing_monthly_commitments=6_000,
+        )
+        assert result["max_loan"] == 0.0
+        assert result["is_feasible"] is False
+
+    def test_second_loan_uses_45pct_ltv(self):
+        # High income so TDSR isn't the binding constraint — LTV should be 45%
+        result = calculate_max_loan(
+            price=1_000_000,
+            gross_monthly_income=100_000,
+            loan_count=1,
+            loan_tenure_years=30,
+        )
+        assert result["max_loan"] == 450_000.0
