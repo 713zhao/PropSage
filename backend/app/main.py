@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -6,9 +7,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.routers import tax, profile
+from app.routers import tax, profile, market, transactions
 
-app = FastAPI(title="PropSage API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.database import init_db
+    init_db()
+    yield
+
+
+app = FastAPI(title="PropSage API", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,6 +35,8 @@ async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse
 
 app.include_router(tax.router)
 app.include_router(profile.router)
+app.include_router(market.router)
+app.include_router(transactions.router)
 
 
 @app.get("/health")
