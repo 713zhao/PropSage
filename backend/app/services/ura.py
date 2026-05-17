@@ -3,7 +3,10 @@ import os
 from pathlib import Path
 
 _MOCK_DIR = Path(__file__).parent.parent / "mock_data"
-_USE_MOCK = os.getenv("USE_MOCK_DATA", "true").lower() in ("true", "1", "yes")
+
+
+def _is_mock() -> bool:
+    return os.getenv("USE_MOCK_DATA", "true").lower() in ("true", "1", "yes")
 
 
 def _load_mock() -> list[dict]:
@@ -22,7 +25,7 @@ class URAService:
         max_psf: float | None = None,
         limit: int = 50,
     ) -> list[dict]:
-        records = _load_mock() if _USE_MOCK else self._fetch_live()
+        records = _load_mock() if _is_mock() else self._fetch_live()
         if district is not None:
             records = [r for r in records if r["district"] == district]
         if property_type is not None:
@@ -43,7 +46,7 @@ class URAService:
         area_sqft: float,
         tolerance_pct: float = 0.2,
     ) -> list[dict]:
-        records = _load_mock() if _USE_MOCK else self._fetch_live()
+        records = _load_mock() if _is_mock() else self._fetch_live()
         lower = area_sqft * (1 - tolerance_pct)
         upper = area_sqft * (1 + tolerance_pct)
         comps = [

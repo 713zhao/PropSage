@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TransactionRecord(BaseModel):
@@ -21,10 +21,10 @@ class TransactionSearchRequest(BaseModel):
     max_price: float | None = None
     min_psf: float | None = None
     max_psf: float | None = None
-    limit: int = 50
+    limit: int = Field(default=50, ge=1, le=500)
 
 
 class CompsRequest(BaseModel):
     district: str
     area_sqft: float
-    tolerance_pct: float = 0.2
+    tolerance_pct: float = Field(default=0.2, ge=0.0, le=1.0)
