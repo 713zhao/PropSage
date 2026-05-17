@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { ProfilePage } from './pages/ProfilePage'
 import { CalculatorPage } from './pages/CalculatorPage'
+import { MarketPage } from './pages/MarketPage'
 
 function ComingSoon({ name }: { name: string }) {
   return (
@@ -21,7 +22,7 @@ export function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/map" element={<ComingSoon name="District Map" />} />
           <Route path="/transactions" element={<ComingSoon name="Transaction Search" />} />
-          <Route path="/market" element={<ComingSoon name="Market Intelligence" />} />
+          <Route path="/market" element={<MarketPage />} />
           <Route path="/loans" element={<ComingSoon name="Loan Comparison" />} />
           <Route path="/roi" element={<ComingSoon name="ROI Projector" />} />
           <Route path="/enbloc" element={<ComingSoon name="En-Bloc Watch" />} />
