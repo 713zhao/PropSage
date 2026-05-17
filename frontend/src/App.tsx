@@ -3,6 +3,7 @@ import { AppShell } from './components/layout/AppShell'
 import { ProfilePage } from './pages/ProfilePage'
 import { CalculatorPage } from './pages/CalculatorPage'
 import { MarketPage } from './pages/MarketPage'
+import { TransactionPage } from './pages/TransactionPage'
 
 function ComingSoon({ name }: { name: string }) {
   return (
@@ -21,7 +22,7 @@ export function App() {
           <Route path="/calculator" element={<CalculatorPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/map" element={<ComingSoon name="District Map" />} />
-          <Route path="/transactions" element={<ComingSoon name="Transaction Search" />} />
+          <Route path="/transactions" element={<TransactionPage />} />
           <Route path="/market" element={<MarketPage />} />
           <Route path="/loans" element={<ComingSoon name="Loan Comparison" />} />
           <Route path="/roi" element={<ComingSoon name="ROI Projector" />} />
