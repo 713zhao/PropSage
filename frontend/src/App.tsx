@@ -9,6 +9,7 @@ import { ROIPage } from './pages/ROIPage'
 import { EnblocPage } from './pages/EnblocPage'
 import { MapPage } from './pages/MapPage'
 import { ShortlistPage } from './pages/ShortlistPage'
+import { AdvisorPage } from './pages/AdvisorPage'
 
 function ComingSoon({ name }: { name: string }) {
   return (
@@ -33,7 +34,7 @@ export function App() {
           <Route path="/roi" element={<ROIPage />} />
           <Route path="/enbloc" element={<EnblocPage />} />
           <Route path="/shortlist" element={<ShortlistPage />} />
-          <Route path="/advisor" element={<ComingSoon name="AI Advisor" />} />
+          <Route path="/advisor" element={<AdvisorPage />} />
         </Routes>
       </AppShell>
     </BrowserRouter>
