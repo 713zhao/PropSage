@@ -4,6 +4,11 @@ import { ProfilePage } from './pages/ProfilePage'
 import { CalculatorPage } from './pages/CalculatorPage'
 import { MarketPage } from './pages/MarketPage'
 import { TransactionPage } from './pages/TransactionPage'
+import { LoanPage } from './pages/LoanPage'
+import { ROIPage } from './pages/ROIPage'
+import { EnblocPage } from './pages/EnblocPage'
+import { MapPage } from './pages/MapPage'
+import { ShortlistPage } from './pages/ShortlistPage'
 
 function ComingSoon({ name }: { name: string }) {
   return (
@@ -21,13 +26,13 @@ export function App() {
           <Route path="/" element={<Navigate to="/calculator" replace />} />
           <Route path="/calculator" element={<CalculatorPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/map" element={<ComingSoon name="District Map" />} />
+          <Route path="/map" element={<MapPage />} />
           <Route path="/transactions" element={<TransactionPage />} />
           <Route path="/market" element={<MarketPage />} />
-          <Route path="/loans" element={<ComingSoon name="Loan Comparison" />} />
-          <Route path="/roi" element={<ComingSoon name="ROI Projector" />} />
-          <Route path="/enbloc" element={<ComingSoon name="En-Bloc Watch" />} />
-          <Route path="/shortlist" element={<ComingSoon name="Property Shortlist" />} />
+          <Route path="/loans" element={<LoanPage />} />
+          <Route path="/roi" element={<ROIPage />} />
+          <Route path="/enbloc" element={<EnblocPage />} />
+          <Route path="/shortlist" element={<ShortlistPage />} />
           <Route path="/advisor" element={<ComingSoon name="AI Advisor" />} />
         </Routes>
       </AppShell>

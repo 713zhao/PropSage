@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { searchTransactions, TransactionRecord, TransactionSearchRequest } from '../api/transactions'
+import { useShortlistStore } from '../stores/shortlistStore'
 
 const DISTRICTS = ['', '01', '02', '03', '04', '05', '09', '10', '11', '15', '19', '21', '23', '25', '26', '27', '28']
 const PROPERTY_TYPES = ['', 'Condominium', 'Apartment', 'Semi-Detached House', 'Terrace House', 'Detached House']
@@ -13,6 +14,7 @@ export function TransactionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState(false)
+  const { addProperty, isShortlisted, properties } = useShortlistStore()
 
   const setField = <K extends keyof TransactionSearchRequest>(k: K, v: TransactionSearchRequest[K]) =>
     setFilters((f) => ({ ...f, [k]: v || undefined }))
@@ -131,21 +133,53 @@ export function TransactionPage() {
                   <th className="text-right px-4 py-3">PSF</th>
                   <th className="text-left px-4 py-3">Tenure</th>
                   <th className="text-left px-4 py-3">Date</th>
+                  <th className="px-4 py-3 w-10" title="Shortlist"></th>
                 </tr>
               </thead>
               <tbody>
-                {results.map((r, i) => (
-                  <tr key={i} className="border-b border-gray-700 hover:bg-gray-750 text-gray-200">
-                    <td className="px-4 py-3 font-medium">{r.project}</td>
-                    <td className="px-4 py-3">D{r.district}</td>
-                    <td className="px-4 py-3">{r.property_type}</td>
-                    <td className="px-4 py-3 text-right">{r.area_sqft.toFixed(0)}</td>
-                    <td className="px-4 py-3 text-right">{formatSgd(r.price)}</td>
-                    <td className="px-4 py-3 text-right">{formatSgd(r.psf)}</td>
-                    <td className="px-4 py-3">{r.tenure}</td>
-                    <td className="px-4 py-3">{r.sale_date}</td>
-                  </tr>
-                ))}
+                {results.map((r, i) => {
+                  const saved = isShortlisted(r.project, r.floor_range, r.price)
+                  const full = properties.length >= 10
+                  return (
+                    <tr key={i} className="border-b border-gray-700 hover:bg-gray-750 text-gray-200">
+                      <td className="px-4 py-3 font-medium">{r.project}</td>
+                      <td className="px-4 py-3">D{r.district}</td>
+                      <td className="px-4 py-3">{r.property_type}</td>
+                      <td className="px-4 py-3 text-right">{r.area_sqft.toFixed(0)}</td>
+                      <td className="px-4 py-3 text-right">{formatSgd(r.price)}</td>
+                      <td className="px-4 py-3 text-right">{formatSgd(r.psf)}</td>
+                      <td className="px-4 py-3">{r.tenure}</td>
+                      <td className="px-4 py-3">{r.sale_date}</td>
+                      <td className="px-4 py-3 text-center">
+                        {saved ? (
+                          <span title="Saved to shortlist" className="text-base select-none">🔖</span>
+                        ) : full ? (
+                          <span title="Shortlist full (10/10)" className="text-base opacity-30 select-none">🏷️</span>
+                        ) : (
+                          <button
+                            title="Add to shortlist"
+                            onClick={() =>
+                              addProperty({
+                                project: r.project,
+                                street: r.street,
+                                district: r.district,
+                                area_sqft: r.area_sqft,
+                                price: r.price,
+                                psf: r.psf,
+                                floor_range: r.floor_range,
+                                tenure: r.tenure,
+                                property_type: r.property_type,
+                              })
+                            }
+                            className="text-base hover:scale-125 transition-transform"
+                          >
+                            🏷️
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           )}
