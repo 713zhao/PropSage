@@ -192,7 +192,7 @@ export function InvestmentStrategyPage() {
             onChange={(e) => setProject(e.target.value)}
             onBlur={fetchProjectData}
             className="block w-full pl-10 pr-24 py-2.5 bg-gray-900 border border-gray-800 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Input project name..."
+            placeholder={t('investment.searchPlaceholder')}
           />
           <button onClick={fetchProjectData} className="absolute right-1.5 top-1.5 px-4 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-md transition-colors">
             {t('investment.fetch')}
@@ -218,10 +218,10 @@ export function InvestmentStrategyPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400">{t('investment.status')}</label>
             <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full bg-gray-800 border border-gray-700 text-white px-4 py-2 rounded-lg focus:ring-1 focus:ring-blue-500">
-              <option value="SC_1">SC 1st Property</option>
-              <option value="SC_2">SC 2nd Property (20% ABSD)</option>
-              <option value="PR_1">PR 1st Property (5% ABSD)</option>
-              <option value="Foreigner">Foreigner (60% ABSD)</option>
+              <option value="SC_1">{t('investment.status.sc1')}</option>
+              <option value="SC_2">{t('investment.status.sc2')}</option>
+              <option value="PR_1">{t('investment.status.pr1')}</option>
+              <option value="Foreigner">{t('investment.status.foreigner')}</option>
             </select>
           </div>
         </div>

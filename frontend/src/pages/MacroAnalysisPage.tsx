@@ -43,7 +43,7 @@ export function MacroAnalysisPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <RefreshCw className="animate-spin text-blue-500" size={40} />
-        <p className="text-gray-400 animate-pulse">Loading real-time market data...</p>
+        <p className="text-gray-400 animate-pulse">{t('common.loading')}</p>
       </div>
     )
   }
@@ -155,7 +155,7 @@ export function MacroAnalysisPage() {
     tooltip: { ...chartTheme.tooltip, trigger: 'axis' },
     xAxis: { ...chartTheme.xAxis, type: 'category', data: unsoldXAxis },
     yAxis: { ...chartTheme.yAxis, type: 'value', name: t('macro.units') },
-    series: [{ name: 'Unsold Private Units', type: 'bar', data: unsoldDataMapped, itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] }, barWidth: '50%' }]
+    series: [{ name: t('chart.unsoldInventory'), type: 'bar', data: unsoldDataMapped, itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] }, barWidth: '50%' }]
   }
 
   // Launches Option

@@ -129,7 +129,7 @@ export function MarketDashboard() {
       data: ['2021 Q1', '2021 Q2', '2021 Q3', '2021 Q4', '2022 Q1', '2022 Q2', '2022 Q3', '2022 Q4', '2023 Q1', '2023 Q2']
     },
     series: [{
-      name: 'Unsold Units',
+      name: t('chart.unsoldInventory'),
       type: 'bar',
       data: [21432, 19342, 17123, 16142, 14321, 15674, 16123, 16543, 16234, 16421],
       itemStyle: {
