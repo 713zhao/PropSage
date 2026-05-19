@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import { getPPI, getRental, getVolume, PPIRecord, RentalRecord, VolumeRecord } from '../api/market'
 
-export function MarketPage() {
+export function MarketDashboard() {
   const [ppi, setPpi] = useState<PPIRecord[]>([])
   const [rental, setRental] = useState<RentalRecord[]>([])
   const [volume, setVolume] = useState<VolumeRecord[]>([])
