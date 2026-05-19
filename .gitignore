@@ -20,6 +20,7 @@ frontend/.env.*.local
 # IDE
 .vscode/
 .idea/
+.claude/
 
 # OS
 .DS_Store
@@ -27,3 +28,11 @@ Thumbs.db
 
 # Superpowers
 .superpowers/
+
+# Project Specific
+PropertyAnalysis/
+.env
+*.ps1
+docs/
+features.md
+DATA_SOURCES.md

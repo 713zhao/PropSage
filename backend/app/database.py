@@ -30,7 +30,7 @@ def init_db() -> None:
 
 
 def _register_models() -> None:
-    from app.models import transaction, market_data  # noqa: F401 — registers models with Base
+    from app.models import transaction, market_data, enbloc  # noqa: F401
 
 
 # Register models immediately so Base.metadata is populated on import

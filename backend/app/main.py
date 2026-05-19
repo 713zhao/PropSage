@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.routers import tax, profile, market, transactions
+from app.routers import tax, profile, market, transactions, loans, roi, enbloc, advisor
+from app.routers import map as map_router
 
 
 @asynccontextmanager
@@ -37,6 +38,11 @@ app.include_router(tax.router)
 app.include_router(profile.router)
 app.include_router(market.router)
 app.include_router(transactions.router)
+app.include_router(loans.router)
+app.include_router(roi.router)
+app.include_router(enbloc.router)
+app.include_router(map_router.router)
+app.include_router(advisor.router)
 
 
 @app.get("/health")
