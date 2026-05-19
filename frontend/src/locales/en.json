@@ -51,5 +51,22 @@
   "macro.chartGdp": "Macro Economic Indicator: GDP & Unemployment",
   "macro.chartGdpSub": "Correlation of annual GDP Growth Rate (YoY %) and Quarterly Unemployment Rate.",
   "macro.chartHdb": "HDB Resale Price Index Trend",
-  "macro.chartHdbSub": "Quarterly HDB resale price index tracking the public housing market."
+  "macro.chartHdbSub": "Quarterly HDB resale price index tracking the public housing market.",
+  "dashboard.stats.priceGrowth": "Avg Price Growth (5Y)",
+  "dashboard.stats.inventory": "Unsold Inventory",
+  "dashboard.stats.landCost": "Avg Land Cost (PSF)",
+  "dashboard.stats.activeBids": "Active GLS Bids",
+  "dashboard.charts.marketPriceTrend": "Private vs Public Price Trend",
+  "dashboard.charts.marketPriceTrendSub": "Comparing PPI with HDB Resale Index movement.",
+  "dashboard.charts.priceGapTrend": "Private-Public Price Gap",
+  "dashboard.charts.priceGapTrendSub": "The percentage premium of private property over HDB resale.",
+  "dashboard.charts.affordabilityIndex": "Housing Affordability Index",
+  "dashboard.charts.affordabilityIndexSub": "Ratio of median house price to annual household income.",
+  "dashboard.charts.populationGrowth": "Population vs Housing Stock",
+  "dashboard.charts.populationGrowthSub": "Correlating population increase with residential unit supply.",
+  "dashboard.table.benchmarks": "Recent Market Benchmarks",
+  "dashboard.table.project": "Project",
+  "dashboard.table.region": "Region",
+  "dashboard.table.price": "Avg Price",
+  "dashboard.table.date": "Date"
 }

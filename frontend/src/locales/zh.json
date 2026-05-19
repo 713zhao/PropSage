@@ -51,5 +51,22 @@
   "macro.chartGdp": "宏观经济指标：GDP 与失业率",
   "macro.chartGdpSub": "年度 GDP 增长率 (YoY %) 与季度整体失业率的关联趋势。",
   "macro.chartHdb": "HDB 转售价格指数走势",
-  "macro.chartHdbSub": "跟踪新加坡公共组屋（HDB）转售价格指数的季度变动走势。"
+  "macro.chartHdbSub": "跟踪新加坡公共组屋（HDB）转售价格指数的季度变动走势。",
+  "dashboard.stats.priceGrowth": "平均价格增长 (5年)",
+  "dashboard.stats.inventory": "未售库存",
+  "dashboard.stats.landCost": "平均土地成本 (PSF)",
+  "dashboard.stats.activeBids": "活跃 GLS 投标",
+  "dashboard.charts.marketPriceTrend": "私宅 vs 公宅价格趋势",
+  "dashboard.charts.marketPriceTrendSub": "比较 PPI 与 HDB 转售价格指数的走势。",
+  "dashboard.charts.priceGapTrend": "私公价格差距",
+  "dashboard.charts.priceGapTrendSub": "私宅相对于 HDB 转售房产的溢价百分比。",
+  "dashboard.charts.affordabilityIndex": "住房负担能力指数",
+  "dashboard.charts.affordabilityIndexSub": "房价中位数与家庭年收入的比率。",
+  "dashboard.charts.populationGrowth": "人口与住房存量",
+  "dashboard.charts.populationGrowthSub": "人口增长与住宅单位供应的相关性。",
+  "dashboard.table.benchmarks": "近期市场基准",
+  "dashboard.table.project": "项目",
+  "dashboard.table.region": "地区",
+  "dashboard.table.price": "平均价格",
+  "dashboard.table.date": "日期"
 }
