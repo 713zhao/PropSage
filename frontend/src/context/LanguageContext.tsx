@@ -4,28 +4,30 @@ import zh from '../locales/zh.json'
 
 type Language = 'en' | 'zh'
 type Translations = typeof en
+type TranslationKey = keyof Translations
 
 const translations: Record<Language, Translations> = { en, zh }
 
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: (key: string) => string
+  t: (key: TranslationKey) => string
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
-    return (localStorage.getItem('language') as Language) || 'zh'
+    const saved = localStorage.getItem('language')
+    return (saved === 'en' || saved === 'zh') ? saved : 'zh'
   })
 
   useEffect(() => {
     localStorage.setItem('language', language)
   }, [language])
 
-  const t = (key: string) => {
-    return (translations[language] as any)[key] || key
+  const t = (key: TranslationKey) => {
+    return translations[language][key] || key
   }
 
   return (
