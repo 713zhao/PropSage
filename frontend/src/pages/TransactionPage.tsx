@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { searchTransactions, TransactionRecord, TransactionSearchRequest } from '../api/transactions'
+import { useState, useEffect } from 'react'
+import { TransactionRecord, TransactionSearchRequest } from '../api/transactions'
 import { useShortlistStore } from '../stores/shortlistStore'
+import { ANALYSIS_API_URL } from '../config/analysisApi'
 
 const DISTRICTS = ['', '01', '02', '03', '04', '05', '09', '10', '11', '15', '19', '21', '23', '25', '26', '27', '28']
-const PROPERTY_TYPES = ['', 'Condominium', 'Apartment', 'Semi-Detached House', 'Terrace House', 'Detached House']
+const PROPERTY_TYPES = ['', 'Condominium', 'Apartment', 'Semi-Detached House', 'Terrace House', 'Detached House', 'HDB']
 
 const formatSgd = (n: number) =>
   new Intl.NumberFormat('en-SG', { style: 'currency', currency: 'SGD', maximumFractionDigits: 0 }).format(n)
@@ -16,6 +17,11 @@ export function TransactionPage() {
   const [searched, setSearched] = useState(false)
   const { addProperty, isShortlisted, properties } = useShortlistStore()
 
+  useEffect(() => {
+    // Initial load with latest data
+    handleSearch()
+  }, [])
+
   const setField = <K extends keyof TransactionSearchRequest>(k: K, v: TransactionSearchRequest[K]) =>
     setFilters((f) => ({ ...f, [k]: v || undefined }))
 
@@ -23,8 +29,38 @@ export function TransactionPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await searchTransactions(filters)
-      setResults(data)
+      const params = new URLSearchParams()
+      if (filters.district) params.append('district', filters.district)
+      if (filters.property_type) params.append('property_type', filters.property_type)
+      if (filters.min_price) params.append('min_price', filters.min_price.toString())
+      if (filters.max_price) params.append('max_price', filters.max_price.toString())
+      if (filters.limit) params.append('limit', filters.limit.toString())
+
+      const res = await fetch(`${ANALYSIS_API_URL}/api/transactions?${params.toString()}`)
+      if (!res.ok) throw new Error(`API error: ${res.status}`)
+      const data = await res.json()
+      
+      // Map API response to TransactionRecord if field names differ
+      const mappedData: TransactionRecord[] = data.map((r: any) => {
+        const price = Number(r.price) || 0
+        const area = Number(r.size_sqft) || 1
+        const psf = Number(r.psf) || (price / area)
+        
+        return {
+          project: r.project || 'Unknown Project',
+          street: r.street || '',
+          district: r.district || '',
+          area_sqft: area,
+          price: price,
+          psf: psf,
+          floor_range: r.floor_range || '-',
+          tenure: r.tenure || '-',
+          sale_date: r.date || '',
+          property_type: r.property_type || 'Private'
+        }
+      })
+
+      setResults(mappedData)
       setSearched(true)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Unknown error')
@@ -125,7 +161,8 @@ export function TransactionPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-700">
-                  <th className="text-left px-4 py-3">Project</th>
+                  <th className="text-left px-4 py-3">Project Name</th>
+                  <th className="text-left px-4 py-3">Address</th>
                   <th className="text-left px-4 py-3">District</th>
                   <th className="text-left px-4 py-3">Type</th>
                   <th className="text-right px-4 py-3">Area (sqft)</th>
@@ -142,14 +179,25 @@ export function TransactionPage() {
                   const full = properties.length >= 10
                   return (
                     <tr key={i} className="border-b border-gray-700 hover:bg-gray-750 text-gray-200">
-                      <td className="px-4 py-3 font-medium">{r.project}</td>
-                      <td className="px-4 py-3">D{r.district}</td>
-                      <td className="px-4 py-3">{r.property_type}</td>
+                      <td className="px-4 py-3 font-bold text-white">{r.project}</td>
+                      <td className="px-4 py-3 text-gray-400 text-xs uppercase">{r.street}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 bg-gray-700 rounded text-[10px] text-gray-300">
+                          {r.district ? (r.district.match(/^\d+$/) ? `D${r.district}` : r.district) : '-'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          r.property_type === 'HDB' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                        }`}>
+                          {r.property_type}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-right">{r.area_sqft.toFixed(0)}</td>
-                      <td className="px-4 py-3 text-right">{formatSgd(r.price)}</td>
-                      <td className="px-4 py-3 text-right">{formatSgd(r.psf)}</td>
-                      <td className="px-4 py-3">{r.tenure}</td>
-                      <td className="px-4 py-3">{r.sale_date}</td>
+                      <td className="px-4 py-3 text-right font-mono text-emerald-400">{formatSgd(r.price)}</td>
+                      <td className="px-4 py-3 text-right font-mono text-blue-400">{formatSgd(r.psf)}</td>
+                      <td className="px-4 py-3 text-[10px] text-gray-400">{r.tenure}</td>
+                      <td className="px-4 py-3 font-medium">{r.sale_date}</td>
                       <td className="px-4 py-3 text-center">
                         {saved ? (
                           <span title="Saved to shortlist" className="text-base select-none">🔖</span>

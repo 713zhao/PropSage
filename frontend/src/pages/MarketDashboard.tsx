@@ -16,28 +16,60 @@ interface MacroData {
 export function MarketDashboard() {
   const { t } = useLanguage()
   const [data, setData] = useState<MacroData[]>([])
+  const [liveData, setLiveData] = useState<any>(null)
+  const [benchmarks, setBenchmarks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [newProjects, setNewProjects] = useState<any[]>([])
+
   useEffect(() => {
-    fetch(`${ANALYSIS_API_URL}/api/macro-insights`)
-      .then(r => r.json())
-      .then(d => {
-        setData(d)
+    Promise.all([
+      fetch(`${ANALYSIS_API_URL}/api/macro-insights`).then(r => r.json()),
+      fetch(`${ANALYSIS_API_URL}/api/macro-live`).then(r => r.json()),
+      fetch(`${ANALYSIS_API_URL}/api/launches-live`).then(r => r.json()),
+      fetch(`${ANALYSIS_API_URL}/api/transactions?limit=20`).then(r => r.json())
+    ])
+      .then(([insights, live, launchBench, trans]) => {
+        setData(insights)
+        setLiveData(live)
+        setTransactions(Array.isArray(trans) ? trans : [])
+        
+        if (Array.isArray(launchBench)) {
+          setNewProjects(launchBench)
+          setBenchmarks(launchBench.slice(0, 8).map((b: any) => ({
+            project: b.project_name || b.project,
+            region: b.region,
+            price: `$${b.avg_price_psf || b.price}`,
+            date: b.launch_date || b.date || b.year
+          })))
+        }
         setLoading(false)
       })
       .catch(err => {
-        console.error('Failed to fetch macro insights:', err)
+        console.error('Failed to fetch dashboard data:', err)
         setLoading(false)
       })
   }, [])
+
+  const displayData = data.slice(-40)
 
   const commonChartStyle = {
     grid: { top: 40, right: 20, bottom: 40, left: 50, containLabel: true },
     tooltip: { trigger: 'axis' },
     xAxis: {
       type: 'category',
-      data: data.map(d => d.quarter).filter((_, i) => i % 4 === 0), // Sample for better labels
-      axisLabel: { color: '#9CA3AF', fontSize: 11 },
+      data: displayData.map(d => d.quarter),
+      axisLabel: { 
+        color: '#9CA3AF', 
+        fontSize: 11,
+        interval: 'auto',
+        formatter: (value: string) => {
+          // If it's a Q1, show the full year, otherwise just show the quarter
+          if (value.includes('Q1')) return value;
+          return value.split(' ')[1] || value;
+        }
+      },
       axisLine: { lineStyle: { color: '#374151' } }
     },
     yAxis: {
@@ -51,12 +83,11 @@ export function MarketDashboard() {
   const marketPriceOption = {
     ...commonChartStyle,
     legend: { textStyle: { color: '#9CA3AF' }, bottom: 0 },
-    xAxis: { ...commonChartStyle.xAxis, data: data.map(d => d.quarter) },
     series: [
       {
         name: 'Private PPI',
         type: 'line',
-        data: data.map(d => d.private_index),
+        data: displayData.map(d => d.private_index),
         smooth: true,
         showSymbol: false,
         lineStyle: { width: 3, color: '#60A5FA' },
@@ -65,7 +96,7 @@ export function MarketDashboard() {
       {
         name: 'HDB Resale',
         type: 'line',
-        data: data.map(d => d.hdb_index),
+        data: displayData.map(d => d.hdb_index),
         smooth: true,
         showSymbol: false,
         lineStyle: { width: 3, color: '#34D399' },
@@ -76,11 +107,10 @@ export function MarketDashboard() {
 
   const priceGapOption = {
     ...commonChartStyle,
-    xAxis: { ...commonChartStyle.xAxis, data: data.map(d => d.quarter) },
     series: [{
       name: 'Price Gap',
       type: 'line',
-      data: data.map(d => d.price_gap),
+      data: displayData.map(d => d.price_gap),
       smooth: true,
       areaStyle: {
         color: {
@@ -96,11 +126,10 @@ export function MarketDashboard() {
 
   const affordabilityOption = {
     ...commonChartStyle,
-    xAxis: { ...commonChartStyle.xAxis, data: data.map(d => d.quarter) },
     series: [{
       name: 'Affordability Index',
       type: 'bar',
-      data: data.map(d => d.affordability_index),
+      data: displayData.map(d => d.affordability_index),
       itemStyle: {
         color: '#FBBF24',
         borderRadius: [4, 4, 0, 0]
@@ -110,33 +139,50 @@ export function MarketDashboard() {
 
   const populationOption = {
     ...commonChartStyle,
-    xAxis: { ...commonChartStyle.xAxis, data: data.map(d => d.quarter) },
     series: [{
       name: 'Population',
       type: 'line',
-      data: data.map(d => parseFloat(d.total_population as string || '0')),
+      data: displayData.map(d => parseFloat(d.total_population as string || '0')),
       smooth: true,
       lineStyle: { width: 3, color: '#A78BFA' },
       itemStyle: { color: '#A78BFA' }
     }]
   }
 
-  // Mock data for unsold inventory as it was missing from API
+  // Use live data for unsold inventory if available with regional breakdown
+  const inventoryData = liveData?.data?.launches || []
   const unsoldOption = {
     ...commonChartStyle,
+    legend: { textStyle: { color: '#9CA3AF' }, bottom: 0 },
     xAxis: { 
       ...commonChartStyle.xAxis, 
-      data: ['2021 Q1', '2021 Q2', '2021 Q3', '2021 Q4', '2022 Q1', '2022 Q2', '2022 Q3', '2022 Q4', '2023 Q1', '2023 Q2']
+      data: inventoryData.length > 0 
+        ? inventoryData.map((d: any) => d.q)
+        : ['22Q1', '22Q2', '22Q3', '22Q4', '23Q1', '23Q2', '23Q3', '23Q4', '24Q1', '24Q2']
     },
-    series: [{
-      name: t('chart.unsoldInventory'),
-      type: 'bar',
-      data: [21432, 19342, 17123, 16142, 14321, 15674, 16123, 16543, 16234, 16421],
-      itemStyle: {
-        color: '#F87171',
-        borderRadius: [4, 4, 0, 0]
+    series: [
+      {
+        name: 'CCR',
+        type: 'bar',
+        stack: 'total',
+        data: inventoryData.length > 0 ? inventoryData.map((d: any) => d.ccr) : [4200, 3800, 3500, 3200, 3100, 3400, 3500, 3600, 3400, 3300],
+        itemStyle: { color: '#8B5CF6' }
+      },
+      {
+        name: 'RCR',
+        type: 'bar',
+        stack: 'total',
+        data: inventoryData.length > 0 ? inventoryData.map((d: any) => d.rcr) : [8200, 7500, 6800, 6500, 6200, 6800, 7100, 7200, 6900, 6800],
+        itemStyle: { color: '#3B82F6' }
+      },
+      {
+        name: 'OCR',
+        type: 'bar',
+        stack: 'total',
+        data: inventoryData.length > 0 ? inventoryData.map((d: any) => d.ocr) : [9032, 8042, 6823, 6442, 5021, 5474, 5523, 5743, 5934, 6321],
+        itemStyle: { color: '#10B981' }
       }
-    }]
+    ]
   }
 
   const stats = [
@@ -144,14 +190,6 @@ export function MarketDashboard() {
     { title: t('dashboard.stats.inventory'), value: '16,421', sub: 'Units Available', icon: Home, color: 'text-emerald-400' },
     { title: t('dashboard.stats.landCost'), value: '$1,250', sub: 'PSF Average', icon: Landmark, color: 'text-amber-400' },
     { title: t('dashboard.stats.activeBids'), value: '8', sub: 'Current GLS Bids', icon: Gavel, color: 'text-purple-400' },
-  ]
-
-  const benchmarks = [
-    { project: 'The Continuum', region: 'RCR', price: '$2,732', date: '2023-05' },
-    { project: 'Tembusu Grand', region: 'RCR', price: '$2,465', date: '2023-04' },
-    { project: 'Sceneca Residence', region: 'OCR', price: '$2,096', date: '2023-01' },
-    { project: 'Lentor Hills Residences', region: 'OCR', price: '$2,100', date: '2023-07' },
-    { project: 'Reserve Residences', region: 'RCR', price: '$2,450', date: '2023-05' },
   ]
 
   return (
@@ -214,7 +252,7 @@ export function MarketDashboard() {
         />
         
         {/* Recent Benchmarks Table */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg flex flex-col h-full">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg flex flex-col h-full lg:col-span-2">
           <div className="p-5 border-b border-gray-800">
             <h3 className="text-lg font-semibold text-white">{t('dashboard.table.benchmarks')}</h3>
           </div>
@@ -224,18 +262,62 @@ export function MarketDashboard() {
                 <tr className="bg-gray-950/50">
                   <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('dashboard.table.project')}</th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('dashboard.table.region')}</th>
+                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Total Units</th>
+                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Sold / Remaining</th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">{t('dashboard.table.price')}</th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">{t('dashboard.table.date')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
-                {benchmarks.map((row, i) => (
+                {newProjects.slice(0, 15).map((row, i) => (
                   <tr key={i} className="hover:bg-gray-800/30 transition-colors">
-                    <td className="px-5 py-4 text-sm font-medium text-white">{row.project}</td>
+                    <td className="px-5 py-4 text-sm font-medium text-white">
+                      <div>{row.project_name}</div>
+                      <div className="text-[10px] text-gray-500 font-normal uppercase mt-0.5">{row.address || 'Singapore'}</div>
+                    </td>
                     <td className="px-5 py-4 text-sm text-gray-400">
                       <span className="px-2 py-1 bg-gray-800 rounded text-xs border border-gray-700">{row.region}</span>
                     </td>
-                    <td className="px-5 py-4 text-sm text-white font-mono text-right">{row.price}</td>
+                    <td className="px-5 py-4 text-sm text-gray-300 text-right">{row.total_units || '-'}</td>
+                    <td className="px-5 py-4 text-sm text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="text-emerald-500 font-medium">{row.units_sold || 0} Sold</span>
+                        <span className="text-gray-500 text-[10px]">{(row.total_units || 0) - (row.units_sold || 0)} Remaining</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-white font-mono text-right">${row.avg_price_psf || row.price} psf</td>
+                    <td className="px-5 py-4 text-sm text-gray-500 text-right">{row.launch_date || row.year}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Top 20 Recent Transactions */}
+        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg flex flex-col h-full lg:col-span-2">
+          <div className="p-5 border-b border-gray-800 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-white">Top 20 Recent Transactions</h3>
+            <span className="text-xs text-gray-500">Live URA Data</span>
+          </div>
+          <div className="flex-1 overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-950/50">
+                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Project / Address</th>
+                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Price</th>
+                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Size (sqft)</th>
+                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">PSF</th>
+                  <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {transactions.map((row, i) => (
+                  <tr key={i} className="hover:bg-gray-800/30 transition-colors">
+                    <td className="px-5 py-4 text-sm font-medium text-white">{row.project}</td>
+                    <td className="px-5 py-4 text-sm text-emerald-400 font-mono text-right">${row.price?.toLocaleString()}</td>
+                    <td className="px-5 py-4 text-sm text-gray-400 text-right">{row.size_sqft}</td>
+                    <td className="px-5 py-4 text-sm text-blue-400 font-mono text-right">${row.size_sqft ? Math.round(row.price / row.size_sqft).toLocaleString() : '-'}</td>
                     <td className="px-5 py-4 text-sm text-gray-500 text-right">{row.date}</td>
                   </tr>
                 ))}
