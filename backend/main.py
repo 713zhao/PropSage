@@ -28,25 +28,6 @@ from app.routers import map as map_router
 
 app = FastAPI(title="PropSage Unified Intelligence API", version="3.0.0")
 
-
-def _seed_db_if_empty():
-    """Populate land/launch tables if DB is empty (first run)."""
-    db_path = os.getenv("DATABASE_URL", os.path.join(base_dir, "data", "property_data.db"))
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    conn = sqlite3.connect(db_path)
-    tables = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
-    conn.close()
-    if "gls_residential" not in tables or "new_launches" not in tables:
-        import importlib.util, pathlib
-        script = pathlib.Path(base_dir) / "scripts" / "populate_land_data.py"
-        spec = importlib.util.spec_from_file_location("populate_land_data", script)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        mod.populate()
-
-
-_seed_db_if_empty()
-
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
