@@ -10,6 +10,7 @@ export function InvestmentStrategyPage() {
   
   useEffect(() => {
     setMounted(true)
+    fetchProjectData()
   }, [])
 
   // State for dynamic modeling

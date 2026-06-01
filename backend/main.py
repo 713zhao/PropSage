@@ -6,6 +6,7 @@ import pandas as pd
 from typing import Optional
 import json
 import datetime
+import time
 import re
 import urllib.request
 import urllib.error
@@ -497,22 +498,33 @@ def _forecast_series(series_data, key_fields, num_periods=2, is_year=False):
 
 
 def fetch_json_live(url, label=""):
-    try:
-        ctx = ssl.create_default_context()
-        headers = {
-            "User-Agent": "SGPropertyDashboard/2.0 (open-source; data.gov.sg public API)",
-            "Accept": "application/json",
-        }
-        api_key = os.getenv("DATA_GOV_API_KEY")
-        if api_key:
-            headers["api-key"] = api_key
-            headers["x-api-key"] = api_key
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=20, context=ctx) as r:
-            return json.loads(r.read())
-    except Exception as e:
-        print(f"  [Warning] Could not fetch {label or url[:60]}: {e}")
-        return None
+    ctx = ssl.create_default_context()
+    headers = {
+        "User-Agent": "SGPropertyDashboard/2.0 (open-source; data.gov.sg public API)",
+        "Accept": "application/json",
+    }
+    api_key = os.getenv("DATA_GOV_API_KEY")
+    if api_key:
+        headers["api-key"] = api_key
+        headers["x-api-key"] = api_key
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=20, context=ctx) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                wait = 3 * (attempt + 1)
+                print(f"  [Rate limit 429] {label or url[:50]} — retrying in {wait}s")
+                time.sleep(wait)
+                continue
+            print(f"  [Warning] Could not fetch {label or url[:60]}: {e}")
+            return None
+        except Exception as e:
+            print(f"  [Warning] Could not fetch {label or url[:60]}: {e}")
+            return None
+    print(f"  [Warning] Max retries exceeded for {label or url[:50]}")
+    return None
 
 
 def datagov_live(dataset_id, limit=40, sort="quarter desc"):
@@ -612,6 +624,7 @@ def fetch_launches_live():
             if label not in merged:
                 merged[label] = {"q": label, "ccr": 0, "rcr": 0, "ocr": 0}
             merged[label][region] = val
+        time.sleep(0.5)
     if not merged:
         return []
     rows = sorted(merged.values(), key=lambda r: _parse_quarter(r["q"]))
@@ -673,6 +686,25 @@ def fetch_unemployment_live():
 
 
 def fetch_hdb_live():
+    # Primary: read from local SQLite (seeded from data.gov.sg, always available)
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql_query(
+            "SELECT quarter, [index] as idx FROM hdb_resale_index ORDER BY quarter",
+            conn
+        )
+        conn.close()
+        if not df.empty:
+            result = []
+            for _, row in df.tail(10).iterrows():
+                yr, q_num = _parse_quarter(str(row["quarter"]))
+                if yr > 0:
+                    result.append({"q": _q_label(yr, q_num), "index": float(row["idx"])})
+            if result:
+                return result
+    except Exception as e:
+        print(f"  [Warning] HDB local DB read failed: {e}")
+    # Fallback: live CKAN API
     recs = datagov_live("d_14f63e595975691e7c24a27ae4c07c79", limit=200)
     if not recs:
         return []
