@@ -35,4 +35,4 @@ PropertyAnalysis/
 *.ps1
 # docs/  <-- Allowing docs for specs
 features.md
-DATA_SOURCES.md
+/DATA_SOURCES.md
