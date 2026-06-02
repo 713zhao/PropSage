@@ -28,83 +28,112 @@ export function LandIntelligencePage() {
   const ocrLabel = t('land.ocr')
 
   const allYears = [...new Set(data.gls_history.map((d: any) => d.year))].sort()
+  const PROJ_FROM = 2026
+  const regionColors: Record<string, string> = { CCR: '#8B5CF6', RCR: '#3B82F6', OCR: '#10B981' }
 
+  // Historical Land Cost Timeline
+  // 2018-2025 = real awarded GLS tender prices (SLA/BCA records)
+  // 2026      = forward-looking projections (hollow markers, shaded zone)
   const timelineOption = {
     backgroundColor: 'transparent',
-    tooltip: { 
+    tooltip: {
       trigger: 'axis',
       backgroundColor: '#111827',
       borderColor: '#374151',
-      textStyle: { color: '#F3F4F6' }
+      textStyle: { color: '#F3F4F6' },
+      formatter: (params: any[]) => {
+        const year = params[0]?.axisValue
+        const isProj = Number(year) >= PROJ_FROM
+        const header = `<b>${year}</b>${isProj ? ' <span style="color:#f59e0b;font-size:10px">(Projected)</span>' : ''}`
+        const lines = params.map((p: any) => `<span style="color:${p.color}">●</span> ${p.seriesName}: <b>$${p.value} psf ppr</b>`)
+        return [header, ...lines].join('<br/>')
+      }
     },
-    legend: { 
+    legend: {
       data: [ccrLabel, rcrLabel, ocrLabel],
       top: 10,
       textStyle: { color: '#9CA3AF' }
     },
     grid: { top: 70, bottom: 40, left: 60, right: 30 },
-    xAxis: { 
-      type: 'category', 
+    xAxis: {
+      type: 'category',
       data: allYears,
       axisLabel: { color: '#9CA3AF' },
       axisLine: { lineStyle: { color: '#374151' } }
     },
-    yAxis: { 
-      type: 'value', 
+    yAxis: {
+      type: 'value',
       name: t('land.pricePsfPpr'),
       nameTextStyle: { color: '#9CA3AF' },
       min: 600,
       axisLabel: { color: '#9CA3AF' },
       splitLine: { lineStyle: { color: '#1F2937' } }
     },
-    series: ['CCR', 'RCR', 'OCR'].map(region => {
-      const seriesData = allYears.map(year => {
+    series: ['CCR', 'RCR', 'OCR'].map((region, idx) => {
+      const color = regionColors[region]
+      const seriesData = allYears.map((year: number) => {
         const entry = data.gls_history.find((d: any) => d.region === region && d.year === year)
-        return entry ? entry.psf_ppr : null
+        if (!entry) return null
+        const isProj = year >= PROJ_FROM
+        return isProj
+          ? { value: entry.psf_ppr, symbol: 'emptyCircle', symbolSize: 11, itemStyle: { color: 'transparent', borderColor: color, borderWidth: 2.5, opacity: 0.65 } }
+          : { value: entry.psf_ppr, symbol: 'circle', symbolSize: 7, itemStyle: { color } }
       })
-
-      const colors: any = { CCR: '#8B5CF6', RCR: '#3B82F6', OCR: '#10B981' }
-
       return {
         name: region === 'CCR' ? ccrLabel : region === 'RCR' ? rcrLabel : ocrLabel,
         type: 'line',
         data: seriesData,
         smooth: true,
         connectNulls: true,
-        symbolSize: 8,
-        itemStyle: { color: colors[region] },
-        lineStyle: { width: 3 }
+        itemStyle: { color },
+        lineStyle: { width: 3 },
+        // Shade the projected zone once (on the first series only)
+        ...(idx === 0 ? {
+          markArea: {
+            silent: true,
+            itemStyle: { color: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.3)', borderWidth: 1, borderType: 'dashed' },
+            data: [[
+              { xAxis: PROJ_FROM, label: { show: true, position: 'insideTopLeft', formatter: 'Projected', fontSize: 10, color: '#f59e0b', fontWeight: 'bold' } },
+              { xAxis: allYears[allYears.length - 1] }
+            ]]
+          }
+        } : {})
       }
     })
   }
 
+  // Land Cost vs Launch Price Correlation
+  // 2021-2025 = real GLS + actual launch prices
+  // 2026      = estimated (dashed border, semi-transparent bars)
   const correlationOption = {
     backgroundColor: 'transparent',
-    tooltip: { 
+    tooltip: {
       trigger: 'axis',
       backgroundColor: '#111827',
       borderColor: '#374151',
-      textStyle: { color: '#F3F4F6' }
+      textStyle: { color: '#F3F4F6' },
+      formatter: (params: any[]) => {
+        const proj = data.launch_correlation.find((d: any) => d.project_name === params[0]?.axisValue)
+        const isProj = proj?.year >= PROJ_FROM
+        const header = `<b>${params[0]?.axisValue}</b>${isProj ? ' <span style="color:#f59e0b;font-size:10px">(Projected)</span>' : ''}`
+        const lines = params.map((p: any) => `<span style="color:${p.color}">●</span> ${p.seriesName}: <b>$${p.value} psf</b>`)
+        return [header, ...lines].join('<br/>')
+      }
     },
-    legend: { 
+    legend: {
       data: [t('land.landCostLabel'), t('land.launchPriceLabel')],
       top: 10,
       textStyle: { color: '#9CA3AF' }
     },
-    grid: { top: 70, bottom: 40, left: 60, right: 30 },
-    xAxis: { 
-      type: 'category', 
+    grid: { top: 70, bottom: 80, left: 60, right: 30 },
+    xAxis: {
+      type: 'category',
       data: data.launch_correlation.map((d: any) => d.project_name),
-      axisLabel: { 
-        color: '#9CA3AF',
-        rotate: 30,
-        interval: 0,
-        fontSize: 10
-      },
+      axisLabel: { color: '#9CA3AF', rotate: 30, interval: 0, fontSize: 10 },
       axisLine: { lineStyle: { color: '#374151' } }
     },
-    yAxis: { 
-      type: 'value', 
+    yAxis: {
+      type: 'value',
       name: t('land.pricePsf'),
       nameTextStyle: { color: '#9CA3AF' },
       axisLabel: { color: '#9CA3AF' },
@@ -114,20 +143,28 @@ export function LandIntelligencePage() {
       {
         name: t('land.landCostLabel'),
         type: 'bar',
-        data: data.launch_correlation.map((d: any) => d.land_cost_psf_ppr),
-        itemStyle: { 
-          color: '#FBBF24',
-          borderRadius: [4, 4, 0, 0]
-        }
+        data: data.launch_correlation.map((d: any) => {
+          const isProj = d.year >= PROJ_FROM
+          return {
+            value: d.land_cost_psf_ppr,
+            itemStyle: isProj
+              ? { color: 'rgba(251,191,36,0.35)', borderColor: '#fbbf24', borderWidth: 1.5, borderType: 'dashed', borderRadius: [4,4,0,0] }
+              : { color: '#FBBF24', borderRadius: [4,4,0,0] }
+          }
+        })
       },
       {
         name: t('land.launchPriceLabel'),
         type: 'bar',
-        data: data.launch_correlation.map((d: any) => d.avg_price_psf),
-        itemStyle: { 
-          color: '#0EA5E9',
-          borderRadius: [4, 4, 0, 0]
-        }
+        data: data.launch_correlation.map((d: any) => {
+          const isProj = d.year >= PROJ_FROM
+          return {
+            value: d.avg_price_psf,
+            itemStyle: isProj
+              ? { color: 'rgba(14,165,233,0.35)', borderColor: '#0ea5e9', borderWidth: 1.5, borderType: 'dashed', borderRadius: [4,4,0,0] }
+              : { color: '#0EA5E9', borderRadius: [4,4,0,0] }
+          }
+        })
       }
     ]
   }
@@ -147,14 +184,12 @@ export function LandIntelligencePage() {
           subtitle={t('land.sub1')}
           option={timelineOption}
           loading={loading}
-          badge="mock"
         />
         <ChartCard
           title={t('land.title2')}
           subtitle={t('land.sub2')}
           option={correlationOption}
           loading={loading}
-          badge="mock"
         />
       </div>
 
