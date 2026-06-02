@@ -29,6 +29,24 @@ from app.routers import map as map_router
 
 app = FastAPI(title="PropSage Unified Intelligence API", version="3.0.0")
 
+
+def _seed_market_reference_if_needed():
+    """Auto-populate rental_yields and location_scores on first run."""
+    _db = os.getenv("DATABASE_URL", os.path.join(base_dir, "data", "property_data.db"))
+    conn = sqlite3.connect(_db)
+    tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+    conn.close()
+    if "rental_yields" not in tables or "location_scores" not in tables:
+        import importlib.util, pathlib
+        script = pathlib.Path(base_dir) / "scripts" / "populate_market_reference.py"
+        spec = importlib.util.spec_from_file_location("populate_market_reference", script)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mod.populate()
+
+
+_seed_market_reference_if_needed()
+
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
@@ -842,6 +860,40 @@ def get_macro_live(refresh: bool = Query(False)):
                 return {"error": f"Failed to fetch data and no cached data: {e}"}
 
     return cache_data
+
+
+@app.get("/api/market-reference")
+def get_market_reference():
+    """
+    Returns slowly-changing reference data: rental yields and location scores.
+    Seeded from URA data and updated by running scripts/populate_market_reference.py.
+    """
+    conn = get_db_connection()
+    try:
+        yields_df = pd.read_sql_query(
+            "SELECT region, gross_yield, net_yield FROM rental_yields ORDER BY region",
+            conn
+        )
+        scores_df = pd.read_sql_query(
+            "SELECT region, axis, score FROM location_scores ORDER BY axis, region",
+            conn
+        )
+        # Pivot scores to [{axis, ccr, rcr, ocr}, ...] for ECharts radar
+        radar: dict = {}
+        for _, row in scores_df.iterrows():
+            axis = row["axis"]
+            if axis not in radar:
+                radar[axis] = {"axis": axis}
+            radar[axis][row["region"].lower()] = int(row["score"])
+
+        return {
+            "rental_yields": yields_df.to_dict(orient="records"),
+            "location_scores": list(radar.values()),
+        }
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        conn.close()
 
 
 if __name__ == "__main__":

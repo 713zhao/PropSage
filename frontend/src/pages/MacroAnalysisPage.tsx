@@ -9,6 +9,7 @@ export function MacroAnalysisPage() {
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [liveData, setLiveData] = useState<any>(null)
+  const [refData, setRefData] = useState<any>(null)
   const [activeMacroTab, setActiveMacroTab] = useState<'gdp' | 'unemployment'>('gdp')
 
   const fetchData = async (forceRefresh = false) => {
@@ -37,6 +38,10 @@ export function MacroAnalysisPage() {
 
   useEffect(() => {
     fetchData()
+    fetch(`${ANALYSIS_API_URL}/api/market-reference`)
+      .then(r => r.json())
+      .then(setRefData)
+      .catch(console.error)
   }, [])
 
   if (loading) {
@@ -209,6 +214,102 @@ export function MacroAnalysisPage() {
     ]
   }
 
+  // ── GLS vs Unsold (derived from existing live data) ───────────────────────
+  const launchTotals: Record<string, number> = {}
+  launchesData.forEach((d: any) => {
+    launchTotals[d.q] = (d.ccr || 0) + (d.rcr || 0) + (d.ocr || 0)
+  })
+  const glsChartData = unsoldData.map((d: any) => ({
+    q: d.q,
+    launches: launchTotals[d.q] || 0,
+    unsold: d.unsold
+  }))
+
+  const glsUnsoldOption = {
+    ...chartTheme,
+    tooltip: { ...chartTheme.tooltip, trigger: 'axis', axisPointer: { type: 'cross' } },
+    legend: { data: [t('macro.newLaunches'), t('chart.unsoldInventory')], bottom: 0, textStyle: { color: '#9CA3AF' } },
+    xAxis: { ...chartTheme.xAxis, type: 'category', data: glsChartData.map((d: any) => d.q) },
+    yAxis: [
+      { ...chartTheme.yAxis, type: 'value', name: t('macro.launchedUnits'), nameTextStyle: { color: '#9CA3AF', fontSize: 10 } },
+      { type: 'value', name: t('macro.unsoldUnits'), nameTextStyle: { color: '#9CA3AF', fontSize: 10 }, position: 'right', axisLabel: { color: '#9CA3AF' }, splitLine: { show: false } }
+    ],
+    series: [
+      {
+        name: t('macro.newLaunches'), type: 'bar', yAxisIndex: 0,
+        data: glsChartData.map((d: any) => d.launches),
+        itemStyle: { color: '#6366f1', borderRadius: [4,4,0,0] }, barWidth: '45%'
+      },
+      {
+        name: t('chart.unsoldInventory'), type: 'line', yAxisIndex: 1,
+        data: glsChartData.map((d: any) => d.unsold),
+        itemStyle: { color: '#3b82f6' }, lineStyle: { width: 2.5 }, symbolSize: 6,
+        markLine: {
+          silent: true,
+          data: [{ yAxis: 15000, label: { value: t('macro.undersupply'), position: 'insideEndTop', fontSize: 10, color: '#10b981' }, lineStyle: { color: '#10b981', type: 'dashed' } }]
+        }
+      }
+    ]
+  }
+
+  // ── Rental Yield by Region ─────────────────────────────────────────────────
+  const yieldRegions = (refData?.rental_yields || []).map((d: any) => d.region)
+  const yieldOption = {
+    ...chartTheme,
+    tooltip: { ...chartTheme.tooltip, trigger: 'axis' },
+    legend: { data: [t('macro.grossYield'), t('macro.netYield')], bottom: 0, textStyle: { color: '#9CA3AF' } },
+    xAxis: { ...chartTheme.xAxis, type: 'category', data: yieldRegions },
+    yAxis: { ...chartTheme.yAxis, type: 'value', name: 'Yield (%)', max: 5.5, axisLabel: { color: '#9CA3AF', formatter: '{value}%' } },
+    series: [
+      {
+        name: t('macro.grossYield'), type: 'bar',
+        data: (refData?.rental_yields || []).map((d: any) => d.gross_yield),
+        itemStyle: { color: '#3b82f6', borderRadius: [4,4,0,0] }, barGap: '20%', barWidth: '30%'
+      },
+      {
+        name: t('macro.netYield'), type: 'bar',
+        data: (refData?.rental_yields || []).map((d: any) => d.net_yield),
+        itemStyle: { color: '#10b981', borderRadius: [4,4,0,0] }, barWidth: '30%',
+        markLine: {
+          silent: true,
+          data: [{ yAxis: 3.2, label: { value: t('macro.mortgageRef'), position: 'insideEndTop', fontSize: 10, color: '#f59e0b' }, lineStyle: { color: '#f59e0b', type: 'dashed' } }]
+        }
+      }
+    ]
+  }
+
+  // ── Location Scorecard Radar (CCR / RCR / OCR) ────────────────────────────
+  const scorecardAxes = ['MRT Access', 'Rental Yield', 'Cap. Upside', 'Liquidity', 'School 1km', 'Master Plan']
+  const scoresByRegion: Record<string, Record<string, number>> = { ccr: {}, rcr: {}, ocr: {} }
+  ;(refData?.location_scores || []).forEach((row: any) => {
+    ;['ccr', 'rcr', 'ocr'].forEach(r => {
+      if (row[r] !== undefined) scoresByRegion[r][row.axis] = row[r]
+    })
+  })
+  const scorecardOption = {
+    backgroundColor: 'transparent',
+    textStyle: { color: '#9CA3AF' },
+    tooltip: { backgroundColor: '#111827', borderColor: '#374151', textStyle: { color: '#F3F4F6' }, trigger: 'item' },
+    legend: { data: ['CCR', 'RCR', 'OCR'], bottom: 0, textStyle: { color: '#9CA3AF' } },
+    radar: {
+      indicator: scorecardAxes.map(a => ({ name: a, max: 100 })),
+      splitLine: { lineStyle: { color: '#1F2937' } },
+      splitArea: { show: false },
+      axisName: { color: '#9CA3AF', fontSize: 11 },
+      axisLine: { lineStyle: { color: '#374151' } },
+      center: ['50%', '50%'],
+      radius: '65%'
+    },
+    series: [{
+      type: 'radar',
+      data: [
+        { name: 'CCR', value: scorecardAxes.map(a => scoresByRegion.ccr[a] || 0), lineStyle: { color: '#8b5cf6', width: 2 }, itemStyle: { color: '#8b5cf6' }, areaStyle: { color: 'rgba(139,92,246,0.15)' } },
+        { name: 'RCR', value: scorecardAxes.map(a => scoresByRegion.rcr[a] || 0), lineStyle: { color: '#3b82f6', width: 2 }, itemStyle: { color: '#3b82f6' }, areaStyle: { color: 'rgba(59,130,246,0.15)' } },
+        { name: 'OCR', value: scorecardAxes.map(a => scoresByRegion.ocr[a] || 0), lineStyle: { color: '#10b981', width: 2 }, itemStyle: { color: '#10b981' }, areaStyle: { color: 'rgba(16,185,129,0.12)' } }
+      ]
+    }]
+  }
+
   // URA Pipeline
   const pipelineData = liveData?.data?.pipeline || { ccr: { immediate: 0, medium: 0 }, rcr: { immediate: 0, medium: 0 }, ocr: { immediate: 0, medium: 0 }, quarter: '' }
   const pipelineCategories = [t('land.ccr'), t('land.rcr'), t('land.ocr')]
@@ -270,6 +371,9 @@ export function MacroAnalysisPage() {
         <ChartCard title={t('macro.chartHdb')} subtitle={t('macro.chartHdbSub')} option={hdbOption} />
         <ChartCard title={t('macro.chartUnsold')} subtitle={t('macro.chartUnsoldSub')} option={unsoldOption} />
         <ChartCard title={t('macro.chartLaunches')} subtitle={t('macro.chartLaunchesSub')} option={launchesOption} />
+        <ChartCard title={t('macro.chartGlsUnsold')} subtitle={t('macro.chartGlsUnsoldSub')} option={glsUnsoldOption} />
+        <ChartCard title={t('macro.chartYield')} subtitle={t('macro.chartYieldSub')} option={yieldOption} />
+        <ChartCard title={t('macro.chartScorecard')} subtitle={t('macro.chartScorecardSub')} option={scorecardOption} />
         <ChartCard title={t('macro.pipelineTitle')} subtitle={`${t('macro.pipelineSub')} (${pipelineData.quarter})`} option={pipelineOption} />
 
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg flex flex-col h-full">
