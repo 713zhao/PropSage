@@ -6,17 +6,30 @@ interface ChartCardProps {
   subtitle?: string
   option: any
   loading?: boolean
+  badge?: 'mock' | 'estimated'
 }
 
-export function ChartCard({ title, subtitle, option, loading }: ChartCardProps) {
+const BADGE_STYLES = {
+  mock:      'bg-amber-500/10 text-amber-400 border-amber-500/25',
+  estimated: 'bg-violet-500/10 text-violet-400 border-violet-500/25',
+}
+
+export function ChartCard({ title, subtitle, option, loading, badge }: ChartCardProps) {
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col h-full shadow-lg">
       <div className="p-5 border-b border-gray-800 flex justify-between items-start">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-white leading-tight">{title}</h3>
+        <div className="space-y-1 flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-lg font-semibold text-white leading-tight">{title}</h3>
+            {badge && (
+              <span className={`shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${BADGE_STYLES[badge]}`}>
+                {badge === 'mock' ? 'Mock Data' : 'Estimated'}
+              </span>
+            )}
+          </div>
           {subtitle && <p className="text-sm text-gray-500 leading-relaxed">{subtitle}</p>}
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 ml-2 shrink-0">
           <button className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded transition-colors"><Download size={16} /></button>
           <button className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded transition-colors"><Maximize2 size={16} /></button>
           <button className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded transition-colors"><MoreHorizontal size={16} /></button>

@@ -142,23 +142,26 @@ export function LandIntelligencePage() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <ChartCard 
+        <ChartCard
           title={t('land.title1')}
           subtitle={t('land.sub1')}
           option={timelineOption}
           loading={loading}
+          badge="mock"
         />
-        <ChartCard 
+        <ChartCard
           title={t('land.title2')}
           subtitle={t('land.sub2')}
           option={correlationOption}
           loading={loading}
+          badge="mock"
         />
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg flex flex-col">
-        <div className="p-5 border-b border-gray-800">
+        <div className="p-5 border-b border-gray-800 flex items-center gap-2">
           <h3 className="text-lg font-semibold text-white">{t('land.caseStudyTitle')}</h3>
+          <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border bg-amber-500/10 text-amber-400 border-amber-500/25">Mock Data</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">

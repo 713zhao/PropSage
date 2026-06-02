@@ -372,8 +372,8 @@ export function MacroAnalysisPage() {
         <ChartCard title={t('macro.chartUnsold')} subtitle={t('macro.chartUnsoldSub')} option={unsoldOption} />
         <ChartCard title={t('macro.chartLaunches')} subtitle={t('macro.chartLaunchesSub')} option={launchesOption} />
         <ChartCard title={t('macro.chartGlsUnsold')} subtitle={t('macro.chartGlsUnsoldSub')} option={glsUnsoldOption} />
-        <ChartCard title={t('macro.chartYield')} subtitle={t('macro.chartYieldSub')} option={yieldOption} />
-        <ChartCard title={t('macro.chartScorecard')} subtitle={t('macro.chartScorecardSub')} option={scorecardOption} />
+        <ChartCard title={t('macro.chartYield')} subtitle={t('macro.chartYieldSub')} option={yieldOption} badge="estimated" />
+        <ChartCard title={t('macro.chartScorecard')} subtitle={t('macro.chartScorecardSub')} option={scorecardOption} badge="estimated" />
         <ChartCard title={t('macro.pipelineTitle')} subtitle={`${t('macro.pipelineSub')} (${pipelineData.quarter})`} option={pipelineOption} />
 
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg flex flex-col h-full">
