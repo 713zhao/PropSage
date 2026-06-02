@@ -1,6 +1,8 @@
 app = "prop-intel-backend-713"
 primary_region = "sin"
 
+[build]
+
 [http_service]
   internal_port = 8080
   force_https = true
@@ -9,7 +11,12 @@ primary_region = "sin"
   min_machines_running = 0
   processes = ["app"]
 
-[mounts]
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[[mounts]]
   source = "prop_intel_data"
   destination = "/app/data"
 

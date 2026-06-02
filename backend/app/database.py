@@ -3,7 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
 from typing import Generator
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./propsage.db")
+_raw_url = os.getenv("DATABASE_URL", "sqlite:///./propsage.db")
+# main.py stores DATABASE_URL as a plain file path for sqlite3; SQLAlchemy needs the sqlite:/// scheme
+DATABASE_URL = _raw_url if "://" in _raw_url else f"sqlite:///{_raw_url}"
 
 engine = create_engine(
     DATABASE_URL,
