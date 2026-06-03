@@ -27,7 +27,7 @@ export function LandIntelligencePage() {
   const rcrLabel = t('land.rcr')
   const ocrLabel = t('land.ocr')
 
-  const allYears = [...new Set(data.gls_history.map((d: any) => d.year))].sort()
+  const allYears: number[] = [...new Set<number>(data.gls_history.map((d: any) => d.year as number))].sort((a, b) => a - b)
   const PROJ_FROM = 2026
   const regionColors: Record<string, string> = { CCR: '#8B5CF6', RCR: '#3B82F6', OCR: '#10B981' }
 
